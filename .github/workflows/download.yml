@@ -1,0 +1,19 @@
+name: download artifacts
+on: workflow_dispatch
+jobs:
+    download_artifacts:
+        runs-on: macos-latest
+        steps:
+        - name: Get Code
+          uses: actions/checkout@v3
+        - name: install dependencies
+          run: npm ci
+        - name: build project
+          run: npm run build
+        - name: uploas artifacts
+          uses: actions/upload-artifacts@v3
+          with: 
+            name: dist files
+            path: dist
+        - name: deployed
+          run: echo "Deploying and downloading artifacts"
