@@ -3,6 +3,8 @@ on: workflow_dispatch
 jobs:
     download_artifacts:
         runs-on: macos-latest
+        outputs: 
+            script_file: ${{ steps.publish.outputs.script_file }}
         steps:
         - name: Get Code
           uses: actions/checkout@v3
@@ -10,6 +12,9 @@ jobs:
           run: npm ci
         - name: build project
           run: npm run build
+        - name: publish js filename
+          id: publish
+          run: find dist/assets/*.js -type f -execdir echo '::set-output name=script_file::{}' ';'
         - name: uploas artifacts
           uses: actions/upload-artifact@v3
           with: 
@@ -17,3 +22,18 @@ jobs:
             path: dist
         - name: deployed
           run: echo "Deploying and downloading artifacts"
+    deploy:
+        needs: download_artifacts
+        runs-on: macos-latest
+        steps: 
+            - name: get build artifacts
+              uses: actions/download-artifact@v3
+              with: 
+                name: dist files
+            - name: output contents
+              run: ls
+            - name: Output filename
+              run: echo " ${{ needs.download_artifacts.outputs.script_file }}"
+            - name: Deploy
+              run: echo "Deploying artifacts"
+
