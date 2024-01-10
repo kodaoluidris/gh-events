@@ -1,0 +1,93 @@
+name: Deploy Websites
+on: 
+  push:
+    branches:
+      - main
+jobs: 
+  lint:
+    runs-on: macos-latest
+    steps: 
+    - name: Get Code
+      uses: actions/checkout@v3 
+    - name: cache dependecies
+      id: cache
+      uses: actions/cache@v3
+      with:
+        path: node_modules
+        key: dep-node-modules-${{ hashFiles('**/package-lock.js') }}
+    - name: Install Depedencies
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: npm ci
+    - name: Lint Code
+      run: npm run lint
+    - name: Print Lint Success Message
+      run: echo "Code linted successfully"
+      
+  test:
+    runs-on: macos-latest
+    steps: 
+    - name: Get Code
+      uses: actions/checkout@v3 
+    - name: cache dependecies
+      id: cache
+      uses: actions/cache@v3
+      with:
+        path: node_modules
+        key: dep-node-modules-${{ hashFiles('**/package-lock.js') }}
+    - name: Install Depedencies
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: npm ci
+    - name: run test
+      continue-on-error: true
+      id: run-tests
+      run: npm run test
+    - name: Upload Test Report
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-report
+        path: test.json
+
+  build:
+    needs: test
+    runs-on: macos-latest
+    steps: 
+    - name: Get Code
+      uses: actions/checkout@v3 
+    - name: cache dependecies
+      id: cache
+      uses: actions/cache@v3
+      with:
+        path: node_modules
+        key: dep-node-modules-${{ hashFiles('**/package-lock.js') }}
+    - name: Install Depedencies
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: npm ci
+    - name: Build Project 
+      run: npm run build
+    - name: Upload App Dist files
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist-files
+        path: dist
+
+  deploy:
+    needs: build
+    runs-on: macos-latest
+    steps: 
+    - name: Get Build Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: dist-files
+    - name: output contents
+      run: ls
+    - name: Deploy
+      run: echo "Deploying..."
+  report:
+    needs: [lint, deploy]
+    if: failure()
+    runs-on: macos-latest
+    steps: 
+    - name: output information
+      run: |
+        echo "Somthing went wrong"
+        echo "${{toJson(github)}}"
