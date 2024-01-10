@@ -1,0 +1,8 @@
+name: reusable deploy
+on: workflow_call
+jobs:
+    deploy:
+        runs-on: macos-latest
+        steps: 
+            - name: deploy 
+              run: echo "reusable deploy...""
