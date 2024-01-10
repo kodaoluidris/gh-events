@@ -72,7 +72,7 @@ jobs:
 
   deploy:
     needs: build
-    uses: ./.github/workflows/resusable.yml
+    uses: ./.github/workflows/reuseable.yml
   report:
     needs: [lint, deploy]
     if: failure()
