@@ -5,4 +5,4 @@ jobs:
         runs-on: macos-latest
         steps: 
             - name: deploy 
-              run: echo "reusable deploy...""
+              run: echo "reusable deploy..."
